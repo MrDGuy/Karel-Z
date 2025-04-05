@@ -1,0 +1,33 @@
+world-size 10 10
+horizontal-wall 0 1
+horizontal-wall 1 1
+horizontal-wall 2 1
+horizontal-wall 3 3
+horizontal-wall 4 1
+horizontal-wall 5 1
+horizontal-wall 6 1
+horizontal-wall 7 6
+horizontal-wall 8 5
+horizontal-wall 8 6
+horizontal-wall 9 5
+vertical-wall 3 1
+vertical-wall 3 2
+vertical-wall 4 2
+vertical-wall 4 1
+vertical-wall 7 1
+vertical-wall 7 2
+vertical-wall 7 3
+vertical-wall 7 4
+vertical-wall 7 5
+vertical-wall 8 1
+vertical-wall 8 2
+vertical-wall 8 0
+vertical-wall 8 3
+vertical-wall 8 4
+vertical-wall 9 6
+vertical-wall 9 7
+vertical-wall 9 8
+vertical-wall 9 9
+beeper-pile 9 9 1
+beeper-pile 3 2 1
+robot 0 0 north

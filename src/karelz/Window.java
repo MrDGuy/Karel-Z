@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintStream;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 import javax.swing.BorderFactory;
@@ -114,6 +115,10 @@ public class Window extends JFrame {
 	File saveFile;
 	ExtensionFileChooser fileChooser;
 	JMenuItem saveButton;
+
+	private boolean initialized = false;
+	private List<Point> originalBeeperLocations = new ArrayList<>();
+
 	
 	/**
 	 * Instantiates a new window with a new world with default settings, editor and playback tools hidden,
@@ -352,6 +357,11 @@ public class Window extends JFrame {
 				
 				playPauseButton = new JButton(PLAY_ICON);
 				playPauseButton.addActionListener(e -> playPause());
+
+				JButton resetButton = new JButton("⭯");
+				resetButton.setToolTipText("Reset world");
+				resetButton.addActionListener(e -> resetWorld());
+				toolBar.add(resetButton);
 				
 				toolBar.add(playPauseButton);
 				toolBar.add(stepButton);
@@ -813,7 +823,7 @@ public class Window extends JFrame {
 		
 		robotTimer = new Timer();
 		
-		launchThreads();
+		//launchThreads();
 	}
 	
 	/**
@@ -844,6 +854,29 @@ public class Window extends JFrame {
 			refreshTimer.purge();
 		}
 	}
+
+	public void saveInitialBeeperState() {
+		originalBeeperLocations = new ArrayList<>();
+		for (int x = 0; x < getWidth(); x++) {
+			for (int y = 0; y < getHeight(); y++) {
+				Cell cell = world.get(x, y);
+				if (cell.containsValidBeeperPile()) {
+					originalBeeperLocations.add(new Point(x, y));
+				}
+			}
+		}
+	}
+	public void resetWorld() {
+		if (world != null) {
+			world.resetWorld();                // Reset all robot positions & beepers
+			runningRobots.clear();             // Clear thread tracking
+			runningRobots.addAll(world.robots); // Re-register fresh robots
+			initialized = false;
+			panel.repaint();                   // Redraw the scene
+		}
+	}
+
+	
 	
 	/**
 	 * Gets the delay in milliseconds between steps when running the world.
@@ -986,10 +1019,11 @@ public class Window extends JFrame {
 		saveFile = null;
 		pause();
 		world.loadWorld(aWorld);
-		launchThreads();
+		//launchThreads();
 		panel.resetPanAndZoom();
 		updateWorldColors(world.colorCollection);
 		updateDirty(false);
+		saveInitialBeeperState();
 	}
 	
 	/**
@@ -1026,6 +1060,11 @@ public class Window extends JFrame {
 			delaySpinner.setEnabled(playing);
 			delayLabel.setEnabled(playing);
 		}
+
+		if (!initialized) {
+			launchThreads();      // ✅ start threads only the first time
+			initialized = true;
+		}
 		
 		if (playing) {
 			
@@ -1042,7 +1081,7 @@ public class Window extends JFrame {
 						Robot robot = runningRobots.get(i);
 						if (robot.threadIsActive) {
 							for (int j = 0; j < stepOverdrive; j++) {
-								robot.step();
+								robot.executeNext();
 							}
 						} else {
 							runningRobots.remove(i);
@@ -1087,9 +1126,15 @@ public class Window extends JFrame {
 	 * See more information on Step Overdrive in {@link #playPause()}.
 	 */
 	public void step() {
+
+		if (!initialized) {
+			launchThreads();
+			initialized = true;
+		}
+
 		for (Robot a : runningRobots) {
 			if (a.threadIsActive) {
-				a.step();
+				a.executeNext();
 			}
 		}
 		panel.repaint();

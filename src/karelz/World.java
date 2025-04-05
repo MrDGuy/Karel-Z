@@ -314,6 +314,14 @@ public class World {
 	public void printWorld() {
 		getWorldAsStringList().forEach(System.out::println);
 	}
+
+	public void resetWorld() {
+		for (Robot robot : robots) {
+			robot.resetToInitialState();
+		}
+	
+		// Optional: reset beepers if you're tracking original beeper layout
+	}
 	
 	/**
 	 * Adds a cell to the world at a given point.
